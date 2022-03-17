@@ -1,0 +1,419 @@
+version: '3.9'
+
+# x-* key is ignored by docker-compose
+x-registry-volumes:
+  &registry-volumes
+  volumes:
+    - nifi-registry-certs:/opt/nifi-registry/nifi-registry-current/certs
+    - nifi-registry-database:/opt/nifi-registry/nifi-registry-current/database
+    - nifi-registry-flow_storage:/opt/nifi-registry/nifi-registry-current/flow_storage
+    - nifi-registry-extension_bundles:/opt/nifi-registry/nifi-registry-current/extension_bundles
+
+services:
+  zookeeper:
+    image: zookeeper:3.6.2
+    hostname: zookeeper
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181"
+    networks:
+      - finai-network
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;2181
+      
+  nifi-1:
+    image: ${NIFI_IMAGE:-custom-nifi}
+    hostname: nifi-1
+    container_name: nifi-1
+    restart: always
+    ports:
+      - "8443:8443"
+    networks:
+      - finai-network
+    environment:
+      NIFI_WEB_HTTPS_PORT: 8443
+      NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
+      AUTH: oidc
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_OIDC_CLIENT_ID}
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_OIDC_CLIENT_SECRET}
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      CA_SERVER_HOST: nifi-ca
+      CA_SERVER_PORT: 9999
+      CA_TOKEN: finaiappsCAToken!
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
+      NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
+      NIFI_ZK_CONNECT_STRING: zookeeper:2181
+      NIFI_ZK_ROOT_NODE: /nifi
+      NIFI_CLUSTER_IS_NODE: 'true'
+      NIFI_CLUSTER_ADDRESS: nifi-1
+      NIFI_CLUSTER_NODE_PROTOCOL_PORT: 9998
+      NIFI_ELECTION_MAX_WAIT: 1 min
+      NODE_IDENTITIES: 'nifi-1,nifi-2,nifi-3'
+      NIFI_CLUSTER_LOAD_BALANCE_HOST: nifi-1
+    # Docker recommends to use named volumes elegant and best practice
+    # to use in Production
+    # https://docs.docker.com/storage/volumes/
+    volumes:
+      - nifi-1-conf:/opt/nifi/nifi-current/conf
+      - nifi-1-flowfile_repository:/opt/nifi/nifi-current/flowfile_repository:rw
+      - nifi-1-content_repository:/opt/nifi/nifi-current/content_repository:rw
+      - nifi-1-database_repository:/opt/nifi/nifi-current/database_repository:rw
+      - nifi-1-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
+      - nifi-1-state:/opt/nifi/nifi-current/state:rw
+    depends_on:
+      - nifi-ca
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://nifi-1:8443/nifi-api/access/config", "--cacert", "/opt/nifi/nifi-current/conf/node_certs/nifi-cert.pem"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  nifi-2:
+    image: ${NIFI_IMAGE:-custom-nifi}
+    hostname: nifi-2
+    container_name: nifi-2
+    restart: always
+    ports:
+      - "8444:8443"
+    networks:
+      - finai-network
+    environment:
+      NIFI_WEB_HTTPS_PORT: 8443
+      NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
+      AUTH: oidc
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_OIDC_CLIENT_ID}
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_OIDC_CLIENT_SECRET}
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      CA_SERVER_HOST: nifi-ca
+      CA_SERVER_PORT: 9999
+      CA_TOKEN: finaiappsCAToken!
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
+      NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
+      NIFI_ZK_CONNECT_STRING: zookeeper:2181
+      NIFI_ZK_ROOT_NODE: /nifi
+      NIFI_CLUSTER_IS_NODE: 'true'
+      NIFI_CLUSTER_ADDRESS: nifi-2
+      NIFI_CLUSTER_NODE_PROTOCOL_PORT: 9998
+      NIFI_CLUSTER_LOAD_BALANCE_HOST: nifi-2
+      NIFI_ELECTION_MAX_WAIT: 1 min
+      NODE_IDENTITIES: 'nifi-1,nifi-2,nifi-3'
+    # Docker recommends to use named volumes elegant and best practice
+    # to use in Production
+    # https://docs.docker.com/storage/volumes/
+    volumes:
+      - nifi-2-conf:/opt/nifi/nifi-current/conf
+      - nifi-2-flowfile_repository:/opt/nifi/nifi-current/flowfile_repository:rw
+      - nifi-2-content_repository:/opt/nifi/nifi-current/content_repository:rw
+      - nifi-2-database_repository:/opt/nifi/nifi-current/database_repository:rw
+      - nifi-2-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
+      - nifi-2-state:/opt/nifi/nifi-current/state:rw
+    depends_on:
+      - nifi-ca
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://nifi-2:8443/nifi-api/access/config", "--cacert", "/opt/nifi/nifi-current/conf/node_certs/nifi-cert.pem"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  nifi-3:
+    image: ${NIFI_IMAGE:-custom-nifi}
+    hostname: nifi-3
+    container_name: nifi-3
+    restart: always
+    ports:
+      - "8445:8443"
+    networks:
+      - finai-network
+    environment:
+      NIFI_WEB_HTTPS_PORT: 8443
+      NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
+      AUTH: oidc
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_OIDC_CLIENT_ID}
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_OIDC_CLIENT_SECRET}
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      CA_SERVER_HOST: nifi-ca
+      CA_SERVER_PORT: 9999
+      CA_TOKEN: finaiappsCAToken!
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
+      NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
+      NIFI_ZK_CONNECT_STRING: zookeeper:2181
+      NIFI_ZK_ROOT_NODE: /nifi
+      NIFI_CLUSTER_IS_NODE: 'true'
+      NIFI_CLUSTER_ADDRESS: nifi-3
+      NIFI_CLUSTER_NODE_PROTOCOL_PORT: 9998
+      NIFI_CLUSTER_LOAD_BALANCE_HOST: nifi-3
+      NIFI_ELECTION_MAX_WAIT: 1 min
+      NODE_IDENTITIES: 'nifi-1,nifi-2,nifi-3'
+    # Docker recommends to use named volumes elegant and best practice
+    # to use in Production
+    # https://docs.docker.com/storage/volumes/
+    volumes:
+      - nifi-3-conf:/opt/nifi/nifi-current/conf
+      - nifi-3-flowfile_repository:/opt/nifi/nifi-current/flowfile_repository:rw
+      - nifi-3-content_repository:/opt/nifi/nifi-current/content_repository:rw
+      - nifi-3-database_repository:/opt/nifi/nifi-current/database_repository:rw
+      - nifi-3-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
+      - nifi-3-state:/opt/nifi/nifi-current/state:rw
+    depends_on:
+      - nifi-ca
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://nifi-3:8443/nifi-api/access/config", "--cacert", "/opt/nifi/nifi-current/conf/node_certs/nifi-cert.pem"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+  
+  # NiFi CA Server to issue self signed nifi/nifi-registry node certificates on their first interaction
+  nifi-ca:
+    image: custom-toolkit
+    hostname: nifi-ca
+    container_name: nifi-ca
+    restart: always
+    ports:
+      - "9999"
+    networks:
+      - finai-network
+    volumes:
+      - nifi-ca-data:/opt/nifi-toolkit/certs
+
+  # NiFi Registry to version dataflows from NiFi cluster
+  nifi-registry:
+    image: custom-registry
+    hostname: nifi-registry
+    ports:
+      - "18443:18443"
+    networks:
+      - finai-network
+    environment:
+      LOG_LEVEL: INFO
+      AUTH: oidc
+      NIFI_REGISTRY_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_REGISTRY_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_REGISTRY_OIDC_CLIENT_ID}
+      NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_REGISTRY_OIDC_CLIENT_SECRET}
+      NIFI_REGISTRY_DB_DIR: /opt/nifi-registry/nifi-registry-current/database
+      NIFI_REGISTRY_FLOW_PROVIDER: file
+      # Git Persistence Provider settings
+      # NIFI_REGISTRY_FLOW_PROVIDER: git
+      # NIFI_REGISTRY_GIT_REMOTE: 'https://github.com/naddym/nifi-dataflows.git'
+      # NIFI_REGISTRY_GIT_USER: naddym
+      # NIFI_REGISTRY_GIT_PASSWORD: p@$wd!
+      NIFI_REGISTRY_FLOW_STORAGE_DIR: /opt/nifi-registry/nifi-registry-current/flow_storage
+      CA_SERVER_HOST: nifi-ca
+      CA_SERVER_PORT: 9999
+      CA_TOKEN: finaiappsCAToken!
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
+      # Database settings, by default it uses local persistent H2 database
+      # Following configs are for postgres db 
+      # NIFI_REGISTRY_DB_URL: 'jdbc:postgresql://postgres-db:5432/nifi-registry'
+      # NIFI_REGISTRY_DB_CLASS: org.postgresql.Driver
+      # NIFI_REGISTRY_DB_DIR: /opt/nifi-registry/nifi-registry-current/database
+      # NIFI_REGISTRY_DB_USER: nifi-registry
+      # NIFI_REGISTRY_DB_PASS: registryP@$wd!
+      # NIFI_REGISTRY_DB_MAX_CONNS: 10
+      # NIFI_REGISTRY_DB_DEBUG_SQL: false
+    <<: *registry-volumes
+    depends_on:
+      - init-service
+      - nifi-ca
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://nifi-registry:18443/nifi-registry", "--cacert", "/opt/nifi-registry/nifi-registry-current/certs/nifi-cert.pem"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  # Init Service to assigned neccessary permissions to run NiFi Registry
+  init-service:
+    image: busybox
+    container_name: busybox
+    restart: 'no'
+    command:
+      - sh
+      - -c
+      - |
+        uid=1000
+        gid=1000
+        chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/certs \
+        && chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/flow_storage \
+        && chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/extension_bundles
+    <<: *registry-volumes
+
+  # Nginx as secure reverse proxy to NiFi cluster and NiFi Registry
+  nginx:
+    image: nginx:1.21.6
+    hostname: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - finai-network
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.crt:/etc/nginx/nginx.crt:ro
+      - ./nginx/nginx.key:/etc/nginx/nginx.key:ro
+    depends_on:
+      - nifi-1
+      - nifi-2
+      - nifi-3
+      - nifi-registry
+
+networks:
+  finai-network:
+    driver: bridge
+
+# Named volume mounts with host bindings
+volumes:
+  nifi-1-conf:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-1/conf
+      o: bind
+  nifi-1-flowfile_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-1/flowfile_repository
+      o: bind
+  nifi-1-content_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-1/content_repository
+      o: bind
+  nifi-1-database_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-1/database_repository
+      o: bind
+  nifi-1-provenance_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-1/provenance_repository
+      o: bind
+  nifi-1-state:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-1/state
+      o: bind
+  nifi-2-conf:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-2/conf
+      o: bind
+  nifi-2-flowfile_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-2/flowfile_repository
+      o: bind
+  nifi-2-content_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-2/content_repository
+      o: bind
+  nifi-2-database_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-2/database_repository
+      o: bind
+  nifi-2-provenance_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-2/provenance_repository
+      o: bind
+  nifi-2-state:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-2/state
+      o: bind
+  nifi-3-conf:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-3/conf
+      o: bind
+  nifi-3-flowfile_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-3/flowfile_repository
+      o: bind
+  nifi-3-content_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-3/content_repository
+      o: bind
+  nifi-3-database_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-3/database_repository
+      o: bind
+  nifi-3-provenance_repository:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-3/provenance_repository
+      o: bind
+  nifi-3-state:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-3/state
+      o: bind
+  nifi-ca-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-ca
+      o: bind
+  nifi-registry-certs:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/nifi-registry/certs
+      o: bind
+  nifi-registry-database:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-registry/database
+      o: bind
+  nifi-registry-flow_storage:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-registry/flow_storage
+      o: bind
+  nifi-registry-extension_bundles:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DATA_PATH}/nifi-registry/extension_bundles
+      o: bind
