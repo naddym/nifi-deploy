@@ -1,0 +1,38 @@
+version: '3'
+services:
+  nifi-1:
+    image: ${NIFI_IMAGE:-apache/nifi:1.15.3}
+    hostname: nifi-1
+    container_name: nifi-1
+    restart: always
+    ports:
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    networks:
+      - nifi-network
+    environment:
+      NIFI_WEB_HTTPS_PORT: 443
+      SINGLE_USER_CREDENTIALS_USERNAME: admin
+      SINGLE_USER_CREDENTIALS_PASSWORD: finaiappsPwd!
+      NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:443'
+    volumes:
+      - nifi-1-conf:/opt/nifi/nifi-current/conf:rw
+      - nifi-1-flowfile_repository:/opt/nifi/nifi-current/flowfile_repository:rw
+      - nifi-1-content_repository:/opt/nifi/nifi-current/content_repository:rw
+      - nifi-1-database_repository:/opt/nifi/nifi-current/database_repository:rw
+      - nifi-1-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
+      - nifi-1-state:/opt/nifi/nifi-current/state:rw
+
+networks:
+  nifi-network:
+    driver: bridge
+
+volumes:
+  nifi-1-conf:
+  nifi-1-flowfile_repository:
+  nifi-1-content_repository:
+  nifi-1-database_repository:
+  nifi-1-provenance_repository:
+  nifi-1-state:
