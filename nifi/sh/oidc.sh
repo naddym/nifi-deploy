@@ -21,12 +21,12 @@ scripts_dir='/opt/nifi/scripts'
 
 echo 'Configuring OIDC settings'
 
-prop_replace "nifi.security.user.oidc.discovery.url" "${SECURITY_USER_OIDC_DISCOVERY_URL}"
-prop_replace "nifi.security.user.oidc.connect.timeout" "${SECURITY_USER_OIDC_CONNECT_TIMEOUT:-5 secs}"
-prop_replace "nifi.security.user.oidc.read.timeout" "${SECURITY_USER_OIDC_READ_TIMEOUT:-5 secs}"
-prop_replace "nifi.security.user.oidc.client.id" "${SECURITY_USER_OIDC_CLIENT_ID:-$(cat ${SECURITY_USER_OIDC_CLIENT_ID_FILE})}"
-prop_replace "nifi.security.user.oidc.client.secret" "${SECURITY_USER_OIDC_CLIENT_SECRET:-$(cat ${SECURITY_USER_OIDC_CLIENT_SECRET_FILE})}"
-prop_replace "nifi.security.user.oidc.preferred.jwsalgorithm" "${SECURITY_USER_OIDC_PREFERRED_JWSALGORITHM}"
-prop_replace "nifi.security.user.oidc.additional.scopes" "${SECURITY_USER_OIDC_ADDITIONAL_SCOPES:-}"
-prop_replace "nifi.security.user.oidc.claim.identifying.user" "${SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER:-}"
-prop_replace "nifi.security.user.oidc.fallback.claims.identifying.user" "${SECURITY_USER_OIDC_FALLBACK_CLAIMS_IDENTIFYING_USER:-}"
+prop_replace "nifi.security.user.oidc.discovery.url" "${NIFI_SECURITY_USER_OIDC_DISCOVERY_URL}"
+prop_replace "nifi.security.user.oidc.connect.timeout" "${NIFI_SECURITY_USER_OIDC_CONNECT_TIMEOUT:-5 secs}"
+prop_replace "nifi.security.user.oidc.read.timeout" "${NIFI_SECURITY_USER_OIDC_READ_TIMEOUT:-5 secs}"
+prop_replace "nifi.security.user.oidc.client.id" "${NIFI_SECURITY_USER_OIDC_CLIENT_ID:-$(cat ${NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE})}"
+prop_replace "nifi.security.user.oidc.client.secret" "${NIFI_SECURITY_USER_OIDC_CLIENT_SECRET:-$(cat ${NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE})}"
+prop_replace "nifi.security.user.oidc.preferred.jwsalgorithm" "${NIFI_SECURITY_USER_OIDC_PREFERRED_JWSALGORITHM}"
+prop_replace "nifi.security.user.oidc.additional.scopes" "${NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES:-}"
+prop_replace "nifi.security.user.oidc.claim.identifying.user" "${NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER:-}"
+prop_replace "nifi.security.user.oidc.fallback.claims.identifying.user" "${NIFI_SECURITY_USER_OIDC_FALLBACK_CLAIMS_IDENTIFYING_USER:-}"

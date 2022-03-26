@@ -4,6 +4,7 @@ version: '3.9'
 x-registry-volumes:
   &registry-volumes
   volumes:
+    - nifi-registry-certs:/opt/nifi-registry/nifi-registry-current/certs
     - nifi-registry-database:/opt/nifi-registry/nifi-registry-current/database
     - nifi-registry-flow_storage:/opt/nifi-registry/nifi-registry-current/flow_storage
     - nifi-registry-extension_bundles:/opt/nifi-registry/nifi-registry-current/extension_bundles
@@ -35,15 +36,15 @@ services:
       NIFI_WEB_HTTPS_PORT: 8443
       NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
       AUTH: oidc
-      SECURITY_USER_OIDC_DISCOVERY_URL: https://accounts.google.com/.well-known/openid-configuration
-      SECURITY_USER_OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
-      SECURITY_USER_OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
-      SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
-      SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_OIDC_CLIENT_ID}
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_OIDC_CLIENT_SECRET}
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
       CA_SERVER_HOST: nifi-ca
       CA_SERVER_PORT: 9999
       CA_TOKEN: finaiappsCAToken!
-      INITIAL_ADMIN_IDENTITY: nadeemm410@gmail.com
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
       NIFI_ZK_ROOT_NODE: /nifi
@@ -85,15 +86,15 @@ services:
       NIFI_WEB_HTTPS_PORT: 8443
       NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
       AUTH: oidc
-      SECURITY_USER_OIDC_DISCOVERY_URL: https://accounts.google.com/.well-known/openid-configuration
-      SECURITY_USER_OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
-      SECURITY_USER_OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
-      SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
-      SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_OIDC_CLIENT_ID}
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_OIDC_CLIENT_SECRET}
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
       CA_SERVER_HOST: nifi-ca
       CA_SERVER_PORT: 9999
       CA_TOKEN: finaiappsCAToken!
-      INITIAL_ADMIN_IDENTITY: nadeemm410@gmail.com
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
       NIFI_ZK_ROOT_NODE: /nifi
@@ -135,15 +136,15 @@ services:
       NIFI_WEB_HTTPS_PORT: 8443
       NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
       AUTH: oidc
-      SECURITY_USER_OIDC_DISCOVERY_URL: https://accounts.google.com/.well-known/openid-configuration
-      SECURITY_USER_OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
-      SECURITY_USER_OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
-      SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
-      SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_OIDC_CLIENT_ID}
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_OIDC_CLIENT_SECRET}
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
       CA_SERVER_HOST: nifi-ca
       CA_SERVER_PORT: 9999
       CA_TOKEN: finaiappsCAToken!
-      INITIAL_ADMIN_IDENTITY: nadeemm410@gmail.com
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
       NIFI_ZK_ROOT_NODE: /nifi
@@ -172,6 +173,7 @@ services:
       timeout: 30s
       retries: 3
   
+  # NiFi CA Server to issue self signed nifi/nifi-registry node certificates on their first interaction
   nifi-ca:
     image: custom-toolkit
     hostname: nifi-ca
@@ -186,16 +188,18 @@ services:
 
   # NiFi Registry to version dataflows from NiFi cluster
   nifi-registry:
-    image: apache/nifi-registry:1.15.3
+    image: custom-registry
     hostname: nifi-registry
-    container_name: nifi-registry
-    restart: always
     ports:
-      - "18080:18080"
+      - "18443:18443"
     networks:
       - finai-network
     environment:
       LOG_LEVEL: INFO
+      AUTH: oidc
+      NIFI_REGISTRY_SECURITY_USER_OIDC_DISCOVERY_URL: ${NIFI_REGISTRY_OIDC_CLIENT_DISCOVERY_URL}
+      NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_ID: ${NIFI_REGISTRY_OIDC_CLIENT_ID}
+      NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_SECRET: ${NIFI_REGISTRY_OIDC_CLIENT_SECRET}
       NIFI_REGISTRY_DB_DIR: /opt/nifi-registry/nifi-registry-current/database
       NIFI_REGISTRY_FLOW_PROVIDER: file
       # Git Persistence Provider settings
@@ -204,6 +208,10 @@ services:
       # NIFI_REGISTRY_GIT_USER: naddym
       # NIFI_REGISTRY_GIT_PASSWORD: p@$wd!
       NIFI_REGISTRY_FLOW_STORAGE_DIR: /opt/nifi-registry/nifi-registry-current/flow_storage
+      CA_SERVER_HOST: nifi-ca
+      CA_SERVER_PORT: 9999
+      CA_TOKEN: finaiappsCAToken!
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       # Database settings, by default it uses local persistent H2 database
       # Following configs are for postgres db 
       # NIFI_REGISTRY_DB_URL: 'jdbc:postgresql://postgres-db:5432/nifi-registry'
@@ -216,9 +224,15 @@ services:
     <<: *registry-volumes
     depends_on:
       - init-service
+      - nifi-ca
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://nifi-registry:18080/nifi-registry"]
-      interval: 60s
+      test: ["CMD", "curl", "-f", "https://nifi-registry:18443/nifi-registry", "--cacert", "/opt/nifi-registry/nifi-registry-current/certs/nifi-cert.pem"]
+      interval: 30s
       timeout: 30s
       retries: 3
 
@@ -232,12 +246,13 @@ services:
       - -c
       - |
         uid=1000
-        guid=1000
-        chown $$uid:$$guid -R /opt/nifi-registry/nifi-registry-current/* \
-        && chown $$uid:$$guid -R /opt/nifi-registry/nifi-registry-current/flow_storage \
-        && chown $$uid:$$guid -R /opt/nifi-registry/nifi-registry-current/extension_bundles
+        gid=1000
+        chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/certs \
+        && chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/flow_storage \
+        && chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/extension_bundles
     <<: *registry-volumes
 
+  # Nginx as secure reverse proxy to NiFi cluster and NiFi Registry
   nginx:
     image: nginx:1.21.6
     hostname: nginx
@@ -262,6 +277,7 @@ networks:
   finai-network:
     driver: bridge
 
+# Named volume mounts with host bindings
 volumes:
   nifi-1-conf:
     driver: local
@@ -376,6 +392,12 @@ volumes:
     driver_opts:
       type: none
       device: ${VOLUME_DATA_PATH}/nifi-ca
+      o: bind
+  nifi-registry-certs:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/nifi-registry/certs
       o: bind
   nifi-registry-database:
     driver: local

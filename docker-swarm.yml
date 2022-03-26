@@ -4,6 +4,7 @@ version: '3.9'
 x-registry-volumes:
   &registry-volumes
   volumes:
+    - nifi-registry-certs:/opt/nifi-registry/nifi-registry-current/certs
     - nifi-registry-database:/opt/nifi-registry/nifi-registry-current/database
     - nifi-registry-flow_storage:/opt/nifi-registry/nifi-registry-current/flow_storage
     - nifi-registry-extension_bundles:/opt/nifi-registry/nifi-registry-current/extension_bundles
@@ -38,24 +39,24 @@ services:
       NIFI_WEB_HTTPS_PORT: 8443
       NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
       AUTH: oidc
-      SECURITY_USER_OIDC_DISCOVERY_URL: https://accounts.google.com/.well-known/openid-configuration
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: oidc_discovery_url # change it
       # This should be used only in development mode. It is recommended
       # to use external docker secrets in production
-      #SECURITY_USER_OIDC_CLIENT_ID_FILE: oidc_client_id
-      #SECURITY_USER_OIDC_CLIENT_SECRET_FILE: oidc_client_secret
+      #NIFI_SECURITY_USER_OIDC_CLIENT_ID: nifi_oidc_client_id
+      #NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: nifi_oidc_client_secret
 
       # Note that, explicity providing sensistive properties through
       # environment variables is not safe. Instead create external docker
       # secrets. The nifi container will load content of secret stored in
-      # files [SECURITY_USER_OIDC_CLIENT_ID_FILE, SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
-      SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/oidc_client_id
-      SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
-      SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
-      SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      # files [NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE, NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/nifi_oidc_client_id
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/nifi_oidc_client_secret
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
       CA_SERVER_HOST: nifi-ca
       CA_SERVER_PORT: 9999
       CA_TOKEN: finaiappsCAToken!
-      INITIAL_ADMIN_IDENTITY: nadeemm410@gmail.com
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
       NIFI_ZK_ROOT_NODE: /nifi
@@ -76,8 +77,8 @@ services:
       - nifi-1-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
       - nifi-1-state:/opt/nifi/nifi-current/state:rw
     secrets:
-      - oidc_client_id
-      - oidc_client_secret
+      - nifi_oidc_client_id
+      - nifi_oidc_client_secret
     depends_on:
       - nifi-ca
       - zookeeper
@@ -110,24 +111,24 @@ services:
       NIFI_WEB_HTTPS_PORT: 8443
       NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
       AUTH: oidc
-      SECURITY_USER_OIDC_DISCOVERY_URL: https://accounts.google.com/.well-known/openid-configuration
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: oidc_discovery_url # change it
       # This should be used only in development mode. It is recommended
       # to use external docker secrets in production
-      #SECURITY_USER_OIDC_CLIENT_ID_FILE: oidc_client_id
-      #SECURITY_USER_OIDC_CLIENT_SECRET_FILE: oidc_client_secret
+      #NIFI_SECURITY_USER_OIDC_CLIENT_ID: oidc_client_id
+      #NIFI_SECURITY_USER_OIDC_CLIENT_SECRET: oidc_client_secret
 
       # Note that, explicity providing sensistive properties through
       # environment variables is not safe. Instead create external docker
       # secrets. The nifi container will load content of secret stored in
-      # files [SECURITY_USER_OIDC_CLIENT_ID_FILE, SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
-      SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/oidc_client_id
-      SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
-      SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
-      SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      # files [NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE, NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/nifi_oidc_client_id
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/nifi_oidc_client_secret
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
       CA_SERVER_HOST: nifi-ca
       CA_SERVER_PORT: 9999
       CA_TOKEN: finaiappsCAToken!
-      INITIAL_ADMIN_IDENTITY: nadeemm410@gmail.com
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
       NIFI_ZK_ROOT_NODE: /nifi
@@ -147,8 +148,8 @@ services:
       - nifi-2-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
       - nifi-2-state:/opt/nifi/nifi-current/state:rw
     secrets:
-      - oidc_client_id
-      - oidc_client_secret
+      - nifi_oidc_client_id
+      - nifi_oidc_client_secret
     depends_on:
       - nifi-ca
       - zookeeper
@@ -182,24 +183,24 @@ services:
       NIFI_WEB_HTTPS_PORT: 8443
       NIFI_SENSITIVE_PROPS_KEY: awesome_finaiapps
       AUTH: oidc
-      SECURITY_USER_OIDC_DISCOVERY_URL: https://accounts.google.com/.well-known/openid-configuration
+      NIFI_SECURITY_USER_OIDC_DISCOVERY_URL: oidc_discovery_url # change it
       # This should be used only in development mode. It is recommended
       # to use external docker secrets in production
-      #SECURITY_USER_OIDC_CLIENT_ID_FILE: oidc_client_id
-      #SECURITY_USER_OIDC_CLIENT_SECRET_FILE: oidc_client_secret
+      #NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE: oidc_client_id
+      #NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE: oidc_client_secret
 
       # Note that, explicity providing sensistive properties through
       # environment variables is not safe. Instead create external docker
       # secrets. The nifi container will load content of secret stored in
-      # files [SECURITY_USER_OIDC_CLIENT_ID_FILE, SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
-      SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/oidc_client_id
-      SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
-      SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
-      SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
+      # files [NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE, NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
+      NIFI_SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/nifi_oidc_client_id
+      NIFI_SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/nifi_oidc_client_secret
+      NIFI_SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER: email
+      NIFI_SECURITY_USER_OIDC_ADDITIONAL_SCOPES: "profile,email"
       CA_SERVER_HOST: nifi-ca
       CA_SERVER_PORT: 9999
       CA_TOKEN: finaiappsCAToken!
-      INITIAL_ADMIN_IDENTITY: nadeemm410@gmail.com
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       NIFI_WEB_PROXY_HOST: 'ec2-107-21-71-171.compute-1.amazonaws.com:8443'
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
       NIFI_ZK_ROOT_NODE: /nifi
@@ -219,8 +220,8 @@ services:
       - nifi-3-provenance_repository:/opt/nifi/nifi-current/provenance_repository:rw
       - nifi-3-state:/opt/nifi/nifi-current/state:rw
     secrets:
-      - oidc_client_id
-      - oidc_client_secret
+      - nifi_oidc_client_id
+      - nifi_oidc_client_secret
     depends_on:
       - nifi-ca
       - zookeeper
@@ -241,7 +242,7 @@ services:
       timeout: 30s
       retries: 3
 
-  # NiFi CA Server to issue self signed nifi node certificates on their first interaction
+  # NiFi CA Server to issue self signed nifi/nifi-registry node certificates on their first interaction
   nifi-ca:
     image: custom-toolkit
     hostname: nifi-ca
@@ -259,14 +260,27 @@ services:
 
   # NiFi Registry to version dataflows from NiFi cluster
   nifi-registry:
-    image: apache/nifi-registry:1.15.3
+    image: custom-registry
     hostname: nifi-registry
     ports:
-      - "18080:18080"
+      - "18443:18443"
     networks:
       - finai-network
     environment:
       LOG_LEVEL: INFO
+      AUTH: oidc
+      NIFI_REGISTRY_SECURITY_USER_OIDC_DISCOVERY_URL: oidc_discovery_url # change it
+      # This should be used only in development mode. It is recommended
+      # to use external docker secrets in production
+      #NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_ID: oidc_client_id
+      #NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_SECRET: oidc_client_secret
+
+      # Note that, explicity providing sensistive properties through
+      # environment variables is not safe. Instead create external docker
+      # secrets. The nifi container will load content of secret stored in
+      # files [NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_ID_FILE, NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_SECRET_FILE].
+      NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_ID_FILE: /run/secrets/nifi_registry_oidc_client_id
+      NIFI_REGISTRY_SECURITY_USER_OIDC_CLIENT_SECRET_FILE: /run/secrets/nifi_registry_oidc_client_secret
       NIFI_REGISTRY_DB_DIR: /opt/nifi-registry/nifi-registry-current/database
       NIFI_REGISTRY_FLOW_PROVIDER: file
       # Git Persistence Provider settings
@@ -275,6 +289,10 @@ services:
       # NIFI_REGISTRY_GIT_USER: naddym
       # NIFI_REGISTRY_GIT_PASSWORD: p@$wd!
       NIFI_REGISTRY_FLOW_STORAGE_DIR: /opt/nifi-registry/nifi-registry-current/flow_storage
+      CA_SERVER_HOST: nifi-ca
+      CA_SERVER_PORT: 9999
+      CA_TOKEN: finaiappsCAToken!
+      INITIAL_ADMIN_IDENTITY: admin@mail.com # change it
       # Database settings, by default it uses local persistent H2 database
       # Following configs are for postgres db 
       # NIFI_REGISTRY_DB_URL: 'jdbc:postgresql://postgres-db:5432/nifi-registry'
@@ -285,22 +303,20 @@ services:
       # NIFI_REGISTRY_DB_MAX_CONNS: 10
       # NIFI_REGISTRY_DB_DEBUG_SQL: false
     <<: *registry-volumes
+    secrets:
+      - nifi_registry_oidc_client_id
+      - nifi_registry_oidc_client_secret
     depends_on:
       - init-service
+      - nifi-ca
     deploy:
       mode: replicated
       replicas: 1
       restart_policy:
         condition: any
-      # resources:
-      #   limits:
-      #     cpus: '0.5.0'
-      #     memory: 1G
-      #   reservations:
-      #     memory: 512M
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://nifi-registry:18080/nifi-registry"]
-      interval: 120s
+      test: ["CMD", "curl", "-f", "https://nifi-registry:18443/nifi-registry", "--cacert", "/opt/nifi-registry/nifi-registry-current/certs/nifi-cert.pem"]
+      interval: 30s
       timeout: 30s
       retries: 3
 
@@ -312,10 +328,10 @@ services:
       - -c
       - |
         uid=1000
-        guid=1000
-        chown $$uid:$$guid -R /opt/nifi-registry/nifi-registry-current/* \
-        && chown $$uid:$$guid -R /opt/nifi-registry/nifi-registry-current/flow_storage \
-        && chown $$uid:$$guid -R /opt/nifi-registry/nifi-registry-current/extension_bundles
+        gid=1000
+        chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/certs \
+        && chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/flow_storage \
+        && chown $$uid:$$gid -R /opt/nifi-registry/nifi-registry-current/extension_bundles
     volumes:
     <<: *registry-volumes
     deploy:
@@ -326,7 +342,7 @@ services:
         condition: on-failure
         max_attempts: 1
 
-  # Nginx as secure reverse proxy to NiFi cluster and insecure reverse proxy to NiFi Registry
+  # Nginx as secure reverse proxy to NiFi cluster and NiFi Registry
   nginx:
     image: nginx:1.21.6
     hostname: nginx
@@ -359,7 +375,7 @@ services:
         condition: any
 
 # In Swarm mode, the mandate driver is overlay
-# though we are not interested in horizonal scaling
+# though we are not interested in horizontal scaling
 # of machines
 networks:
   finai-network:
@@ -373,16 +389,20 @@ configs:
 
 # Secrets are created externally with `docker secret create`
 secrets:
-  oidc_client_id:
+  nifi_oidc_client_id:
     external: true
-  oidc_client_secret:
+  nifi_oidc_client_secret:
+    external: true
+  nifi_registry_oidc_client_id:
+    external: true
+  nifi_registry_oidc_client_secret:
     external: true
   nginx.crt:
     external: true
   nginx.key:
     external: true
 
-# Named volume mounts 
+# Named volume mounts with host bindings
 volumes:
   nifi-1-conf:
     driver: local
@@ -497,6 +517,12 @@ volumes:
     driver_opts:
       type: none
       device: /data/nifi-ca
+      o: bind
+  nifi-registry-certs:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/nifi-registry/certs
       o: bind
   nifi-registry-database:
     driver: local
