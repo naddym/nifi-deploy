@@ -32,6 +32,7 @@ mkdir -p ${VOLUME_DATA_PATH}/nifi-3/state
 mkdir -p ${VOLUME_DATA_PATH}/nifi-ca
 
 # create nifi-registry host mounts
+mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/certs
 mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/database
 mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/flow_storage
 mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/extension_bundles
@@ -64,6 +65,7 @@ chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-3/state
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-ca
 
 # assign non-root permissions to nifi-registry
+chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/certs
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/database
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/flow_storage
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/extension_bundles

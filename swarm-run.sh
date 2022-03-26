@@ -4,9 +4,13 @@ UID=1000
 GUID=1000
 VOLUME_DATA_PATH=/data
 
-# provide oidc client credentials
-OIDC_CLIENT_ID=
-OIDC_CLIENT_SECRET=
+# provide nifi oidc client credentials
+NIFI_OIDC_CLIENT_ID=
+NIFI_OIDC_CLIENT_SECRET=
+
+# provide nifi-registry oidc client credentials
+NIFI_REGISTRY_OIDC_CLIENT_ID=
+NIFI_REGISTRY_OIDC_CLIENT_SECRET=
 
 # create nifi-1 host mounts
 mkdir -p ${VOLUME_DATA_PATH}/nifi-1/conf
@@ -36,6 +40,7 @@ mkdir -p ${VOLUME_DATA_PATH}/nifi-3/state
 mkdir -p ${VOLUME_DATA_PATH}/nifi-ca
 
 # create nifi-registry host mounts
+mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/certs
 mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/database
 mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/flow_storage
 mkdir -p ${VOLUME_DATA_PATH}/nifi-registry/extension_bundles
@@ -68,6 +73,7 @@ chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-3/state
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-ca
 
 # assign non-root permissions to nifi-registry
+chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/certs
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/database
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/flow_storage
 chown ${UID}:${GUID} -R ${VOLUME_DATA_PATH}/nifi-registry/extension_bundles
@@ -79,13 +85,16 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx.key -out 
 docker swarm init
 
 # create secrets of nginx certificate and private key
-docker secret nginx.crt nginx.crt
-docker secret nginx.key nginx.key
+docker secret create nginx.crt nginx.crt
+docker secret create nginx.key nginx.key
 
-# create oidc docker external secrets. Replace variables with actual values
-echo ${OIDC_CLIENT_ID} | docker secret create oidc_client_id -
-echo ${OIDC_CLIENT_SECRET} | docker secret create oidc_client_secret -
+# create nifi oidc docker external secrets. Replace variables with actual values
+echo ${NIFI_OIDC_CLIENT_ID} | docker secret create nifi_oidc_client_id -
+echo ${NIFI_OIDC_CLIENT_SECRET} | docker secret create nifi_oidc_client_secret -
 
+# create nifi-registry oidc docker external secrets. Replace variables with actual values
+echo ${NIFI_REGISTRY_OIDC_CLIENT_ID} | docker secret create nifi_registry_oidc_client_id -
+echo ${NIFI_REGISTRY_OIDC_CLIENT_SECRET} | docker secret create nifi_registry_oidc_client_secret -
 
 # Bring up stack 
 docker stack deploy -c docker-swarm.yml nifi-stack
