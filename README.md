@@ -77,7 +77,12 @@ v9uiupir3e9lofe1yp8mfohv8   nifi_registry_oidc_client_secret             21 seco
 # docker configs
 $ docker config ls
 ID                          NAME                    CREATED              UPDATED
-q6qwf5edclonlety3z1vz65oo   nifi-stack_nginx.conf   About a minute ago   About a minute ago
+ibqyv012i7uj698p3bbaz4e43   nifi-stack_nginx.conf                      7 minutes ago   7 minutes ago
+oybexsbx2t8za4pq706x5fxpw   nifi-stack_nifi-cluster.conf               7 minutes ago   7 minutes ago
+b3rcgn7jbn4rvk825gpmo0z94   nifi-stack_nifi-http-server-api.conf       7 minutes ago   7 minutes ago
+os16s7a0a6xf255tsn0bgcim2   nifi-stack_nifi-http_server-api-log.conf   7 minutes ago   7 minutes ago
+jazjhzg212ljo0uoo04d8z0t3   nifi-stack_nifi-log.conf                   7 minutes ago   7 minutes ago
+n2yjhha27543gnvv32zr33nm2   nifi-stack_nifi-registry-log.conf          7 minutes ago   7 minutes ago
 ```
 
 After deploying the stack, you should have access to the UI

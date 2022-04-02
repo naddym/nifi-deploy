@@ -267,6 +267,11 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/nginx.crt:/etc/nginx/nginx.crt:ro
       - ./nginx/nginx.key:/etc/nginx/nginx.key:ro
+      - ./nginx/upstreams/nifi-cluster.conf:/etc/nginx/conf.d/nifi-cluster.conf:ro
+      - ./nginx/upstreams/nifi-http-server-api.conf:/etc/nginx/conf.d/nifi-http-server-api.conf:ro
+      - ./nginx/logs/nifi-log.conf:/etc/nginx/conf.d/nifi-log.conf:ro
+      - ./nginx/logs/nifi-registry-log.conf:/etc/nginx/conf.d/nifi-registry-log.conf:ro
+      - ./nginx/logs/nifi-http-server-api-log.conf:/etc/nginx/conf.d/nifi-http-server-api-log.conf:ro
     depends_on:
       - nifi-1
       - nifi-2

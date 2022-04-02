@@ -356,6 +356,16 @@ services:
     configs:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
+      - source: nifi-cluster.conf
+        target: /etc/nginx/conf.d/nifi-cluster.conf
+      - source: nifi-http-server-api.conf
+        target: /etc/nginx/conf.d/nifi-http-server-api.conf
+      - source: nifi-log.conf
+        target: /etc/nginx/conf.d/nifi-log.conf
+      - source: nifi-registry-log.conf
+        target: /etc/nginx/conf.d/nifi-registry-log.conf
+      - source: nifi-http-server-api-log.conf
+        target: /etc/nginx/conf.d/nifi-http-server-api-log.conf
     secrets:
       - source: nginx.crt
         target: /etc/nginx/nginx.crt
@@ -386,6 +396,16 @@ networks:
 configs:
   nginx.conf:
     file: ./nginx/nginx.conf
+  nifi-cluster.conf:
+    file: ./nginx/upstreams/nifi-cluster.conf
+  nifi-http-server-api.conf:
+    file: ./nginx/upstreams/nifi-http-server-api.conf
+  nifi-log.conf:
+    file: ./nginx/logs/nifi-log.conf
+  nifi-registry-log.conf:
+    file: ./nginx/logs/nifi-registry-log.conf
+  nifi-http-server-api-log.conf:
+    file: ./nginx/logs/nifi-http-server-api-log.conf
 
 # Secrets are created externally with `docker secret create`
 secrets:
